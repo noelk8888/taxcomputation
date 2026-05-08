@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Building2, MapPin, PhilippinePeso, Calculator, Percent } from 'lucide-react';
+import { Building2, MapPin, PhilippinePeso } from 'lucide-react';
 import './index.css';
 
 function App() {
@@ -122,13 +122,8 @@ function App() {
       };
 
       const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbybwtYAuokdD5d4XjG8DvYlS-_h-qvwrdmXQ8hZ1jfVACT9Da488Yg8llHUNJk_yu1nBw/exec";
-      if (WEB_APP_URL === "YOUR_WEB_APP_URL_HERE") {
-        alert("Please paste your Google Apps Script Web App URL in App.tsx");
-        setIsGenerating(false);
-        return;
-      }
 
-      const response = await fetch(WEB_APP_URL, {
+      await fetch(WEB_APP_URL, {
         method: 'POST',
         mode: 'no-cors',
         headers: {
