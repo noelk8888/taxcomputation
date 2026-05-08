@@ -584,6 +584,9 @@ function App() {
             NEW Link
           </button>
         </div>
+        <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '1rem', paddingBottom: '0.25rem' }}>
+          Kiu Realty Ph 2026 @ Luxe Realty and Development Corporation
+        </p>
       </form>
     </div>
   );
