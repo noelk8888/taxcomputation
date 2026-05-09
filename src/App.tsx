@@ -8,9 +8,7 @@ function App() {
   const [priceType, setPriceType] = useState('GROSS'); // GROSS or NET
   const [isGenerating, setIsGenerating] = useState(false);
   const [vatStatus, setVatStatus] = useState('VAT'); // VAT or NON VAT
-  const [gsheetLink, setGsheetLink] = useState(() => {
-    return localStorage.getItem('gsheetLink') || 'https://docs.google.com/spreadsheets/d/1O_MVdOKrHZLTwuu5vfwa0IygNyeNQ_wt3w35RzFmvsc/edit?gid=1456171567#gid=1456171567';
-  });
+  const gsheetLink = 'https://docs.google.com/spreadsheets/d/1O_MVdOKrHZLTwuu5vfwa0IygNyeNQ_wt3w35RzFmvsc/edit?gid=1456171567#gid=1456171567';
   
   const [lotArea, setLotArea] = useState('');
   const [zonalValue, setZonalValue] = useState('');
@@ -141,14 +139,7 @@ function App() {
     }
   };
 
-  const handleUpdateLink = () => {
-    const newLink = prompt("Enter the new Google Sheet URL:");
-    if (newLink && newLink.trim() !== '') {
-      setGsheetLink(newLink.trim());
-      localStorage.setItem('gsheetLink', newLink.trim());
-      alert("GSHEET link updated successfully!");
-    }
-  };
+
 
   return (
     <div className="card">
@@ -571,18 +562,7 @@ function App() {
           >
             GSHEET
           </button>
-          <button 
-            type="button" 
-            className="generate-btn" 
-            onClick={handleUpdateLink}
-            style={{ 
-              backgroundColor: '#64748b',
-              padding: '0.75rem 2rem',
-              fontSize: '1rem'
-            }}
-          >
-            NEW Link
-          </button>
+
         </div>
         <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '1rem', paddingBottom: '0.25rem' }}>
           Kiu Realty Ph 2026 @ Luxe Realty and Development Corporation
