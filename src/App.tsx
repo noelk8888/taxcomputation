@@ -564,9 +564,10 @@ function App() {
           </button>
 
         </div>
-        <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '1rem', paddingBottom: '0.25rem' }}>
-          Kiu Realty Ph 2026 @ Luxe Realty and Development Corporation
-        </p>
+        <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '1rem', paddingBottom: '0.25rem' }}>
+          <p style={{ fontSize: '0.8125rem', margin: 0 }}>Luxe Realty and Development Corporation</p>
+          <p style={{ fontSize: '0.75rem', margin: 0 }}>2026 @ Kiu Realty Ph</p>
+        </div>
       </form>
     </div>
   );
