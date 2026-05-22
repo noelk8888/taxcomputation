@@ -7,7 +7,7 @@ function App() {
   const [totalContractPrice, setTotalContractPrice] = useState('');
   const [priceType, setPriceType] = useState('GROSS'); // GROSS or NET
   const [isGenerating, setIsGenerating] = useState(false);
-  const [vatStatus, setVatStatus] = useState('VAT'); // VAT or NON VAT
+  const [vatStatus, setVatStatus] = useState('NON VAT'); // VAT or NON VAT
   const gsheetLink = 'https://docs.google.com/spreadsheets/d/1O_MVdOKrHZLTwuu5vfwa0IygNyeNQ_wt3w35RzFmvsc/edit?gid=1456171567#gid=1456171567';
   
   const [lotArea, setLotArea] = useState('');
@@ -104,7 +104,7 @@ function App() {
     setListingAddress('');
     setTotalContractPrice('');
     setPriceType('GROSS');
-    setVatStatus('VAT');
+    setVatStatus('NON VAT');
     setLotArea('');
     setZonalValue('');
     setImprovementValue('');
@@ -329,7 +329,10 @@ function App() {
                   name="taxType" 
                   value="EWT" 
                   checked={taxType === 'EWT'} 
-                  onChange={(e) => setTaxType(e.target.value)} 
+                  onChange={(e) => {
+                    setTaxType(e.target.value);
+                    setVatStatus('VAT');
+                  }} 
                 />
                 <span style={{ whiteSpace: 'nowrap' }}>EWT</span>
               </label>
@@ -354,21 +357,21 @@ function App() {
                 <input 
                   type="radio" 
                   name="vatStatus" 
-                  value="VAT" 
-                  checked={vatStatus === 'VAT'} 
-                  onChange={(e) => setVatStatus(e.target.value)} 
-                />
-                <span style={{ whiteSpace: 'nowrap' }}>VAT 12% DOAS net</span>
-              </label>
-              <label className="radio-option" style={{ whiteSpace: 'nowrap' }}>
-                <input 
-                  type="radio" 
-                  name="vatStatus" 
                   value="NON VAT" 
                   checked={vatStatus === 'NON VAT'} 
                   onChange={(e) => setVatStatus(e.target.value)} 
                 />
                 <span style={{ whiteSpace: 'nowrap' }}>Non-VAT</span>
+              </label>
+              <label className="radio-option" style={{ whiteSpace: 'nowrap' }}>
+                <input 
+                  type="radio" 
+                  name="vatStatus" 
+                  value="VAT" 
+                  checked={vatStatus === 'VAT'} 
+                  onChange={(e) => setVatStatus(e.target.value)} 
+                />
+                <span style={{ whiteSpace: 'nowrap' }}>VAT 12% DOAS net</span>
               </label>
             </div>
           </div>
