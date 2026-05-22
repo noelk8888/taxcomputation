@@ -100,6 +100,24 @@ function App() {
     }).format(amount);
   };
 
+  const handleReset = () => {
+    setListingAddress('');
+    setTotalContractPrice('');
+    setPriceType('GROSS');
+    setVatStatus('VAT');
+    setLotArea('');
+    setZonalValue('');
+    setImprovementValue('');
+    setDoasAmount('');
+    setTaxType('CGT');
+    setHasBusinessTax(false);
+    setBrokersFeePercent('3');
+    setNotaryFeeAmount('8,000');
+    setItFeeAmount('5,000');
+    setShowNotaryEstimate(true);
+    setShowItFeeEstimate(true);
+  };
+
   const handleGenerate = async () => {
     setIsGenerating(true);
     try {
@@ -561,6 +579,18 @@ function App() {
             }}
           >
             GSHEET
+          </button>
+          <button 
+            type="button" 
+            className="generate-btn" 
+            onClick={handleReset}
+            style={{ 
+              backgroundColor: '#ef4444',
+              padding: '0.75rem 2rem',
+              fontSize: '1rem'
+            }}
+          >
+            RESET
           </button>
 
         </div>
