@@ -21,10 +21,38 @@ function App() {
   const [brokersFeePercent, setBrokersFeePercent] = useState('3');
 
   // Part 3 States
-  const [notaryFeeAmount, setNotaryFeeAmount] = useState('8,000');
-  const [itFeeAmount, setItFeeAmount] = useState('5,000');
+  const [notaryFeeAmount, setNotaryFeeAmount] = useState('');
+  const [itFeeAmount, setItFeeAmount] = useState('');
   const [showNotaryEstimate, setShowNotaryEstimate] = useState(true);
   const [showItFeeEstimate, setShowItFeeEstimate] = useState(true);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key === 'Enter') {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'SELECT' || target.tagName === 'TEXTAREA') {
+        e.preventDefault();
+        const form = e.currentTarget;
+        const elements = Array.from(form.elements) as HTMLElement[];
+        const editableElements = elements.filter(el => {
+          const isInput = el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA';
+          if (!isInput) return false;
+          const inputEl = el as HTMLInputElement;
+          const isReadOnly = inputEl.readOnly;
+          const isDisabled = inputEl.disabled;
+          const isHidden = inputEl.type === 'hidden';
+          const isSubmitOrButton = inputEl.type === 'submit' || inputEl.type === 'button' || inputEl.type === 'image';
+          const isCheckboxOrRadio = inputEl.type === 'checkbox' || inputEl.type === 'radio';
+          const rect = el.getBoundingClientRect();
+          const isVisible = rect.width > 0 && rect.height > 0;
+          return !isReadOnly && !isDisabled && !isHidden && !isSubmitOrButton && !isCheckboxOrRadio && isVisible;
+        });
+        const currentIndex = editableElements.indexOf(target);
+        if (currentIndex !== -1 && currentIndex < editableElements.length - 1) {
+          editableElements[currentIndex + 1].focus();
+        }
+      }
+    }
+  };
 
   const handleNumberChange = (setter: React.Dispatch<React.SetStateAction<string>>, value: string) => {
     // Allow numbers and a single decimal point
@@ -55,6 +83,12 @@ function App() {
     return doas / 1.12;
   }, [doasAmount]);
 
+  // Compute tax base amount: raw DOAS amount for CGT, DOAS net of VAT for EWT
+  const taxBaseAmount = React.useMemo(() => {
+    const doas = parseFloat(doasAmount.replace(/,/g, '')) || 0;
+    return taxType === 'CGT' ? doas : doasNetOfVat;
+  }, [doasAmount, taxType, doasNetOfVat]);
+
   // Compute Total Zonal Value
   const totalZonalValueAmount = React.useMemo(() => {
     const la = parseFloat(lotArea.replace(/,/g, '')) || 0;
@@ -66,9 +100,9 @@ function App() {
   }, [lotArea, zonalValue, improvementValue]);
 
   // Part 2 Computations
-  const sellerTaxAmount = doasNetOfVat * 0.06;
-  const vatAmount = vatStatus === 'VAT' ? doasNetOfVat * 0.12 : 0;
-  const businessTaxAmount = hasBusinessTax ? doasNetOfVat * 0.02 : 0;
+  const sellerTaxAmount = taxBaseAmount * 0.06;
+  const vatAmount = vatStatus === 'VAT' ? taxBaseAmount * 0.12 : 0;
+  const businessTaxAmount = hasBusinessTax ? taxBaseAmount * 0.02 : 0;
   
   const brokersFeeAmount = React.useMemo(() => {
     const tcp = parseFloat(totalContractPrice.replace(/,/g, ''));
@@ -82,9 +116,9 @@ function App() {
   const totalGrossPrice = priceType === 'NET' ? (netTotalContractPrice + totalSellersExpense) : totalSellersExpense;
 
   // Part 3 Computations
-  const dstAmount = doasNetOfVat * 0.015;
-  const transferTaxAmount = doasNetOfVat * 0.0075;
-  const registrationFeeAmount = doasNetOfVat > 0 ? ((((doasNetOfVat - 1700000) / 20000) * 90) + 8796) : 0;
+  const dstAmount = taxBaseAmount * 0.015;
+  const transferTaxAmount = taxBaseAmount * 0.0075;
+  const registrationFeeAmount = taxBaseAmount > 0 ? ((((taxBaseAmount - 1700000) / 20000) * 90) + 8796) : 0;
 
   const totalBuyersExpense = React.useMemo(() => {
     const nf = parseFloat(notaryFeeAmount.replace(/,/g, '')) || 0;
@@ -112,8 +146,8 @@ function App() {
     setTaxType('CGT');
     setHasBusinessTax(false);
     setBrokersFeePercent('3');
-    setNotaryFeeAmount('8,000');
-    setItFeeAmount('5,000');
+    setNotaryFeeAmount('');
+    setItFeeAmount('');
     setShowNotaryEstimate(true);
     setShowItFeeEstimate(true);
   };
@@ -161,7 +195,7 @@ function App() {
 
   return (
     <div className="card">
-      <form onSubmit={(e) => e.preventDefault()}>
+      <form onSubmit={(e) => e.preventDefault()} onKeyDown={handleKeyDown}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
           <h2 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--text-primary)' }}>Part 1. Listing Details</h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -294,18 +328,20 @@ function App() {
           </div>
         </div>
 
-        <div className="horizontal-group">
-          <label>DOAS Net of VAT</label>
-          <div className="input-wrapper">
-            <PhilippinePeso className="input-icon" size={18} />
-            <input 
-              type="text" 
-              value={formatCurrency(doasNetOfVat)}
-              readOnly
-              style={{ backgroundColor: 'var(--bg-color)', color: 'var(--text-primary)', fontWeight: 600 }}
-            />
+        {taxType === 'EWT' && (
+          <div className="horizontal-group">
+            <label>DOAS Net of VAT</label>
+            <div className="input-wrapper">
+              <PhilippinePeso className="input-icon" size={18} />
+              <input 
+                type="text" 
+                value={formatCurrency(doasNetOfVat)}
+                readOnly
+                style={{ backgroundColor: 'var(--bg-color)', color: 'var(--text-primary)', fontWeight: 600 }}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="divider" style={{ margin: '0.5rem 0', backgroundColor: '#ef4444' }}></div>
         <h2 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>{priceType === 'NET' ? 'Part 2: Gross Price Computation' : "Part 2: Seller's Expense"}</h2>
@@ -319,7 +355,10 @@ function App() {
                   name="taxType" 
                   value="CGT" 
                   checked={taxType === 'CGT'} 
-                  onChange={(e) => setTaxType(e.target.value)} 
+                  onChange={(e) => {
+                    setTaxType(e.target.value);
+                    setVatStatus('NON VAT');
+                  }} 
                 />
                 <span style={{ whiteSpace: 'nowrap' }}>CGT</span>
               </label>
@@ -336,7 +375,9 @@ function App() {
                 />
                 <span style={{ whiteSpace: 'nowrap' }}>EWT</span>
               </label>
-              <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>(6% DOAS net)</span>
+              <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                {taxType === 'CGT' ? '(6% DOAS)' : '(6% DOAS net)'}
+              </span>
             </div>
           </div>
           <div className="input-wrapper">
@@ -371,7 +412,9 @@ function App() {
                   checked={vatStatus === 'VAT'} 
                   onChange={(e) => setVatStatus(e.target.value)} 
                 />
-                <span style={{ whiteSpace: 'nowrap' }}>VAT 12% DOAS net</span>
+                <span style={{ whiteSpace: 'nowrap' }}>
+                  {taxType === 'CGT' ? 'VAT 12% DOAS' : 'VAT 12% DOAS net'}
+                </span>
               </label>
             </div>
           </div>
@@ -454,7 +497,9 @@ function App() {
         <h2 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Part 3. Buyer's Expenses</h2>
 
         <div className="horizontal-group">
-          <label style={{ flex: 1 }}>DST (1.5% of DOAS Net)</label>
+          <label style={{ flex: 1 }}>
+            {taxType === 'CGT' ? 'DST (1.5% of DOAS)' : 'DST (1.5% of DOAS Net)'}
+          </label>
           <div className="input-wrapper">
             <PhilippinePeso className="input-icon" size={18} />
             <input 
@@ -467,7 +512,9 @@ function App() {
         </div>
 
         <div className="horizontal-group">
-          <label style={{ flex: 1 }}>Transfer Tax (0.75% of DOAS Net)</label>
+          <label style={{ flex: 1 }}>
+            {taxType === 'CGT' ? 'Transfer Tax (0.75% of DOAS)' : 'Transfer Tax (0.75% of DOAS Net)'}
+          </label>
           <div className="input-wrapper">
             <PhilippinePeso className="input-icon" size={18} />
             <input 
