@@ -173,16 +173,27 @@ function App() {
 
       const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbybwtYAuokdD5d4XjG8DvYlS-_h-qvwrdmXQ8hZ1jfVACT9Da488Yg8llHUNJk_yu1nBw/exec";
 
-      await fetch(WEB_APP_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: {
-          'Content-Type': 'text/plain',
-        },
-        body: JSON.stringify(payload)
-      });
-      
-      alert("Successfully triggered! Please check your Google Sheet.");
+      let opened = false;
+      try {
+        const response = await fetch(WEB_APP_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain',
+          },
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (result && result.url) {
+          window.open(result.url, '_blank');
+          opened = true;
+        }
+      } catch (e) {
+        console.warn("Could not read redirect response directly due to CORS:", e);
+      }
+
+      if (!opened) {
+        alert("Successfully triggered! Please check your Google Sheet.");
+      }
     } catch (error) {
       alert("Failed to generate. Check console for details.");
       console.error(error);
