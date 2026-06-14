@@ -706,20 +706,19 @@ function App() {
                 type="text" 
                 value={tempGsheetLink} 
                 onChange={(e) => setTempGsheetLink(e.target.value)} 
+                placeholder={gsheetLink || "Paste your Google Sheet link here"}
                 style={{ width: '100%', padding: '0.5rem 0.75rem' }}
               />
             </div>
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-              {gsheetLink && (
-                <button 
-                  type="button" 
-                  className="generate-btn" 
-                  style={{ backgroundColor: '#64748b' }} 
-                  onClick={() => setShowGsheetModal(false)}
-                >
-                  Cancel
-                </button>
-              )}
+              <button 
+                type="button" 
+                className="generate-btn" 
+                style={{ backgroundColor: '#64748b' }} 
+                onClick={() => setShowGsheetModal(false)}
+              >
+                Cancel
+              </button>
               <button 
                 type="button" 
                 className="generate-btn" 
