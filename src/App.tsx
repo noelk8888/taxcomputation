@@ -8,7 +8,18 @@ function App() {
   const [priceType, setPriceType] = useState('GROSS'); // GROSS or NET
   const [isGenerating, setIsGenerating] = useState(false);
   const [vatStatus, setVatStatus] = useState('NON VAT'); // VAT or NON VAT
-  const gsheetLink = 'https://docs.google.com/spreadsheets/d/1O_MVdOKrHZLTwuu5vfwa0IygNyeNQ_wt3w35RzFmvsc/edit?gid=1456171567#gid=1456171567';
+
+  const [showGsheetModal, setShowGsheetModal] = useState(false);
+  const [gsheetLink, setGsheetLink] = useState(() => {
+    return localStorage.getItem('gsheetLink') || '';
+  });
+  const [tempGsheetLink, setTempGsheetLink] = useState('');
+
+  React.useEffect(() => {
+    if (!gsheetLink) {
+      setShowGsheetModal(true);
+    }
+  }, [gsheetLink]);
   
   const [lotArea, setLotArea] = useState('');
   const [zonalValue, setZonalValue] = useState('');
@@ -632,7 +643,10 @@ function App() {
           <button 
             type="button" 
             className="generate-btn" 
-            onClick={() => window.open(gsheetLink, '_blank')}
+            onClick={() => {
+              setTempGsheetLink(gsheetLink);
+              setShowGsheetModal(true);
+            }}
             style={{ 
               backgroundColor: '#10b981',
               padding: '0.75rem 2rem',
@@ -655,11 +669,90 @@ function App() {
           </button>
 
         </div>
-        <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '1rem', paddingBottom: '0.25rem' }}>
-          <p style={{ fontSize: '0.8125rem', margin: 0 }}>Luxe Realty and Development Corporation</p>
-          <p style={{ fontSize: '0.75rem', margin: 0 }}>2026 @ Kiu Realty Ph</p>
+        <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '1rem', paddingBottom: '0.25rem', fontSize: '0.75rem', lineHeight: '1.4' }}>
+          <p style={{ margin: 0 }}>
+            Disclaimer: This tool provides unofficial estimates only. It is not a substitute for professional tax advice. Always consult a tax expert or government agency for final tax determinations.
+          </p>
         </div>
       </form>
+
+      {showGsheetModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div className="card" style={{ width: '90%', maxWidth: '500px', backgroundColor: 'var(--card-bg)' }}>
+            <h3 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-primary)' }}>Setup GSHEET Link</h3>
+            
+            {!gsheetLink && (
+              <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', borderLeft: '4px solid #ef4444', padding: '1rem', marginBottom: '1.5rem', borderRadius: '4px' }}>
+                <p style={{ margin: 0, fontWeight: 600, color: '#ef4444', marginBottom: '0.5rem' }}>Action Required</p>
+                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-primary)' }}>
+                  You must set up your Google Sheet link before you can proceed.
+                </p>
+              </div>
+            )}
+
+            <div style={{ marginBottom: '1.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+              <p style={{ marginBottom: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>Instructions:</p>
+              <ol style={{ paddingLeft: '1.25rem', margin: 0 }}>
+                <li style={{ marginBottom: '0.25rem' }}>Open your desired Google Sheet in your browser.</li>
+                <li style={{ marginBottom: '0.25rem' }}>Ensure the SHARE status is set to <strong>"Anyone with the link"</strong> so the app can access it.</li>
+                <li style={{ marginBottom: '0.25rem' }}>Copy the entire URL from the address bar.</li>
+                <li style={{ marginBottom: '0.25rem' }}>Paste the copied URL into the field below.</li>
+                <li>Click <strong>Save</strong> to store it on this laptop.</li>
+              </ol>
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+              <input 
+                type="text" 
+                value={tempGsheetLink} 
+                onChange={(e) => setTempGsheetLink(e.target.value)} 
+                style={{ width: '100%', padding: '0.5rem 0.75rem' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              {gsheetLink && (
+                <button 
+                  type="button" 
+                  className="generate-btn" 
+                  style={{ backgroundColor: '#64748b' }} 
+                  onClick={() => setShowGsheetModal(false)}
+                >
+                  Cancel
+                </button>
+              )}
+              <button 
+                type="button" 
+                className="generate-btn" 
+                style={{ backgroundColor: '#3b82f6' }} 
+                onClick={() => {
+                  localStorage.setItem('gsheetLink', tempGsheetLink);
+                  setGsheetLink(tempGsheetLink);
+                  setShowGsheetModal(false);
+                }}
+              >
+                Save
+              </button>
+              <button 
+                type="button" 
+                className="generate-btn" 
+                style={{ backgroundColor: '#10b981' }} 
+                onClick={() => {
+                  if (tempGsheetLink) {
+                     localStorage.setItem('gsheetLink', tempGsheetLink);
+                     setGsheetLink(tempGsheetLink);
+                     window.open(tempGsheetLink, '_blank');
+                     setShowGsheetModal(false);
+                  } else {
+                     alert('Please enter a GSHEET link first.');
+                  }
+                }}
+              >
+                Save & Open
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
