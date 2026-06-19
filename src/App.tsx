@@ -181,7 +181,21 @@ function App() {
         hasBusinessTax: hasBusinessTax,
         brokersFeePercent: parseFloat(brokersFeePercent) || 0,
         notaryFeeAmount: parseFloat(notaryFeeAmount.replace(/,/g, '')) || 0,
-        itFeeAmount: parseFloat(itFeeAmount.replace(/,/g, '')) || 0
+        itFeeAmount: parseFloat(itFeeAmount.replace(/,/g, '')) || 0,
+        
+        // Computed Values
+        taxBaseAmount,
+        totalZonalValueAmount,
+        sellerTaxAmount,
+        vatAmount,
+        businessTaxAmount,
+        brokersFeeAmount,
+        totalSellersExpense,
+        totalGrossPrice,
+        dstAmount,
+        transferTaxAmount,
+        registrationFeeAmount,
+        totalBuyersExpense
       };
 
       const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbybwtYAuokdD5d4XjG8DvYlS-_h-qvwrdmXQ8hZ1jfVACT9Da488Yg8llHUNJk_yu1nBw/exec";
