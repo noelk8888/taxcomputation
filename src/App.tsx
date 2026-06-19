@@ -167,8 +167,6 @@ function App() {
 
   const handleGenerate = async () => {
     setIsGenerating(true);
-    // Open the tab synchronously right when the user clicks, to bypass popup blockers
-    const newTab = window.open('about:blank', '_blank');
     
     try {
       const payload = {
@@ -221,22 +219,20 @@ function App() {
         const fallbackUrl = "https://docs.google.com/spreadsheets/d/1O_MVdOKrHZLTwuu5vfwa0IygNyeNQ_wt3w35RzFmvsc/edit";
         const finalUrl = gsheetLink || fallbackUrl;
 
-        if (newTab) {
-          newTab.location.href = finalUrl;
+        const openedTab = window.open(finalUrl, '_blank');
+        if (openedTab) {
+          opened = true;
         } else {
-          window.open(finalUrl, '_blank');
+          alert("Your browser blocked the popup! Please allow popups for this site, or manually open your Google Sheet.");
         }
-        opened = true;
       } catch (e) {
         console.warn("Webhook fetch failed:", e);
       }
 
       if (!opened) {
-        if (newTab) newTab.close();
         alert("Successfully triggered! Please check your Google Sheet.");
       }
     } catch (error) {
-      if (newTab) newTab.close();
       alert("Failed to generate. Check console for details.");
       console.error(error);
     } finally {
