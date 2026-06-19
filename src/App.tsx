@@ -88,10 +88,9 @@ function App() {
   };
 
   // Automatically compute DOAS net of VAT
-  const doasNetOfVat = React.useMemo(() => {
-    const doas = parseFloat(doasAmount.replace(/,/g, ''));
-    if (isNaN(doas)) return 0;
-    return doas / 1.12;
+  // Automatically compute raw DOAS amount
+  const doasRaw = React.useMemo(() => {
+    return parseFloat(doasAmount.replace(/,/g, '')) || 0;
   }, [doasAmount]);
 
   // Compute Total Zonal Value
@@ -104,13 +103,16 @@ function App() {
     return (la * zv) + iv;
   }, [lotArea, zonalValue, improvementValue]);
 
-  // Compute tax base amount: raw DOAS amount for CGT, DOAS net of VAT for EWT.
-  // If DOAS (or DOAS net of VAT) is less than TOTAL ZONAL VALUE, use TOTAL ZONAL VALUE.
+  // Check if Total Zonal Value is higher than DOAS
+  const isZonalHigher = totalZonalValueAmount > doasRaw;
+
+  // Compute tax base amount:
+  // For CGT: higher of DOAS and TOTAL ZONAL VALUE.
+  // For EWT: Net of VAT of whichever is higher of DOAS and TOTAL ZONAL VALUE (i.e. MAX(DOAS, TOTAL ZONAL VALUE) / 1.12).
   const taxBaseAmount = React.useMemo(() => {
-    const doasRaw = parseFloat(doasAmount.replace(/,/g, '')) || 0;
-    const baseDoas = taxType === 'CGT' ? doasRaw : doasNetOfVat;
-    return baseDoas < totalZonalValueAmount ? totalZonalValueAmount : baseDoas;
-  }, [doasAmount, taxType, doasNetOfVat, totalZonalValueAmount]);
+    const higherAmount = Math.max(doasRaw, totalZonalValueAmount);
+    return taxType === 'CGT' ? higherAmount : higherAmount / 1.12;
+  }, [doasRaw, taxType, totalZonalValueAmount]);
 
   // Part 2 Computations
   const sellerTaxAmount = taxBaseAmount * 0.06;
@@ -375,12 +377,12 @@ function App() {
 
         {taxType === 'EWT' && (
           <div className="horizontal-group">
-            <label>DOAS Net of VAT</label>
+            <label>{isZonalHigher ? 'ZONAL NET OF VAT' : 'DOAS NET OF VAT'}</label>
             <div className="input-wrapper">
               <PhilippinePeso className="input-icon" size={18} />
               <input 
                 type="text" 
-                value={formatCurrency(doasNetOfVat)}
+                value={formatCurrency(taxBaseAmount)}
                 readOnly
                 style={{ backgroundColor: 'var(--bg-color)', color: 'var(--text-primary)', fontWeight: 600 }}
               />
@@ -421,7 +423,10 @@ function App() {
                 <span style={{ whiteSpace: 'nowrap' }}>EWT</span>
               </label>
               <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
-                {taxType === 'CGT' ? '(6% DOAS)' : '(6% DOAS net)'}
+                ({isZonalHigher 
+                  ? (taxType === 'EWT' ? '6% of ZONAL Net' : '6% of ZONAL') 
+                  : (taxType === 'EWT' ? '6% of DOAS Net' : '6% of DOAS')
+                })
               </span>
             </div>
           </div>
@@ -458,7 +463,10 @@ function App() {
                   onChange={(e) => setVatStatus(e.target.value)} 
                 />
                 <span style={{ whiteSpace: 'nowrap' }}>
-                  {taxType === 'CGT' ? 'VAT 12% DOAS' : 'VAT 12% DOAS net'}
+                  {isZonalHigher 
+                    ? (taxType === 'CGT' ? 'VAT 12% ZONAL' : 'VAT 12% ZONAL net')
+                    : (taxType === 'CGT' ? 'VAT 12% DOAS' : 'VAT 12% DOAS net')
+                  }
                 </span>
               </label>
             </div>
@@ -543,7 +551,10 @@ function App() {
 
         <div className="horizontal-group">
           <label style={{ flex: 1 }}>
-            {taxType === 'CGT' ? 'DST (1.5% of DOAS)' : 'DST (1.5% of DOAS Net)'}
+            {isZonalHigher
+              ? (taxType === 'CGT' ? 'DST (1.5% of ZONAL)' : 'DST (1.5% of ZONAL Net)')
+              : (taxType === 'CGT' ? 'DST (1.5% of DOAS)' : 'DST (1.5% of DOAS Net)')
+            }
           </label>
           <div className="input-wrapper">
             <PhilippinePeso className="input-icon" size={18} />
@@ -558,7 +569,10 @@ function App() {
 
         <div className="horizontal-group">
           <label style={{ flex: 1 }}>
-            {taxType === 'CGT' ? 'Transfer Tax (0.75% of DOAS)' : 'Transfer Tax (0.75% of DOAS Net)'}
+            {isZonalHigher
+              ? (taxType === 'CGT' ? 'Transfer Tax (0.75% of ZONAL)' : 'Transfer Tax (0.75% of ZONAL Net)')
+              : (taxType === 'CGT' ? 'Transfer Tax (0.75% of DOAS)' : 'Transfer Tax (0.75% of DOAS Net)')
+            }
           </label>
           <div className="input-wrapper">
             <PhilippinePeso className="input-icon" size={18} />
