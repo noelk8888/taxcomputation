@@ -205,24 +205,30 @@ function App() {
 
       let opened = false;
       try {
-        const response = await fetch(WEB_APP_URL, {
+        // Use no-cors to avoid browser CORS errors or third-party cookie blocks
+        await fetch(WEB_APP_URL, {
           method: 'POST',
+          mode: 'no-cors',
           headers: {
             'Content-Type': 'text/plain',
           },
           body: JSON.stringify(payload)
         });
-        const result = await response.json();
-        if (result && result.url) {
-          if (newTab) {
-            newTab.location.href = result.url;
-          } else {
-            window.open(result.url, '_blank');
-          }
-          opened = true;
+        
+        // Wait a tiny bit for the sheet to update
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        const fallbackUrl = "https://docs.google.com/spreadsheets/d/1O_MVdOKrHZLTwuu5vfwa0IygNyeNQ_wt3w35RzFmvsc/edit";
+        const finalUrl = gsheetLink || fallbackUrl;
+
+        if (newTab) {
+          newTab.location.href = finalUrl;
+        } else {
+          window.open(finalUrl, '_blank');
         }
+        opened = true;
       } catch (e) {
-        console.warn("Could not read redirect response directly due to CORS:", e);
+        console.warn("Webhook fetch failed:", e);
       }
 
       if (!opened) {
