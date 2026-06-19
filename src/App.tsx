@@ -94,14 +94,6 @@ function App() {
     return doas / 1.12;
   }, [doasAmount]);
 
-  // Compute tax base amount: raw DOAS amount for CGT, DOAS net of VAT for EWT.
-  // If DOAS (or DOAS net of VAT) is less than TOTAL ZONAL VALUE, use TOTAL ZONAL VALUE.
-  const taxBaseAmount = React.useMemo(() => {
-    const doasRaw = parseFloat(doasAmount.replace(/,/g, '')) || 0;
-    const baseDoas = taxType === 'CGT' ? doasRaw : doasNetOfVat;
-    return baseDoas < totalZonalValueAmount ? totalZonalValueAmount : baseDoas;
-  }, [doasAmount, taxType, doasNetOfVat, totalZonalValueAmount]);
-
   // Compute Total Zonal Value
   const totalZonalValueAmount = React.useMemo(() => {
     const la = parseFloat(lotArea.replace(/,/g, '')) || 0;
@@ -111,6 +103,14 @@ function App() {
     if (la === 0 && zv === 0 && iv === 0) return 0;
     return (la * zv) + iv;
   }, [lotArea, zonalValue, improvementValue]);
+
+  // Compute tax base amount: raw DOAS amount for CGT, DOAS net of VAT for EWT.
+  // If DOAS (or DOAS net of VAT) is less than TOTAL ZONAL VALUE, use TOTAL ZONAL VALUE.
+  const taxBaseAmount = React.useMemo(() => {
+    const doasRaw = parseFloat(doasAmount.replace(/,/g, '')) || 0;
+    const baseDoas = taxType === 'CGT' ? doasRaw : doasNetOfVat;
+    return baseDoas < totalZonalValueAmount ? totalZonalValueAmount : baseDoas;
+  }, [doasAmount, taxType, doasNetOfVat, totalZonalValueAmount]);
 
   // Part 2 Computations
   const sellerTaxAmount = taxBaseAmount * 0.06;
