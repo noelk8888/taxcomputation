@@ -213,9 +213,6 @@ function App() {
           body: JSON.stringify(payload)
         });
         
-        // Wait a tiny bit for the sheet to update
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
         const fallbackUrl = "https://docs.google.com/spreadsheets/d/1O_MVdOKrHZLTwuu5vfwa0IygNyeNQ_wt3w35RzFmvsc/edit";
         const finalUrl = gsheetLink || fallbackUrl;
 
