@@ -199,7 +199,7 @@ function App() {
         totalBuyersExpense
       };
 
-      const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyJXL821eo-cxIjc7CuSB1jbuXs6gGseVOiX5uDmQcM545r_uVVntJvhvDGQWDWM0b8zw/exec";
+      const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzE_oDKUMmzZKNzlgNF2tP9apVEDLMzrb5BWyJhwKbsFsUAxEmUkncQkCoKVq5yN6eSAA/exec";
 
       let opened = false;
       try {
