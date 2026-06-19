@@ -15,8 +15,8 @@ function doPost(e) {
       newSheet.deleteColumns(4, maxCols - 3);
     }
     const maxRows = newSheet.getMaxRows();
-    if (maxRows > 29) {
-      newSheet.deleteRows(30, maxRows - 29);
+    if (maxRows > 36) {
+      newSheet.deleteRows(37, maxRows - 36);
     }
     
     let baseName = data.listingAddress || "New Listing";
@@ -34,8 +34,8 @@ function doPost(e) {
     newSheet.getRange('B1').clearContent();
     newSheet.getRange('B21').clearContent();
     
-    // Clear all template notes/comments from A1:C29
-    newSheet.getRange('A1:C29').clearNote();
+    // Clear all template notes/comments from A1:C36
+    newSheet.getRange('A1:C36').clearNote();
     
     // Determine tax type and base cells
     const isEWT = (data.taxType === 'EWT');
