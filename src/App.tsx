@@ -203,24 +203,23 @@ function App() {
 
       let opened = false;
       try {
-        // Use no-cors to avoid browser CORS errors or third-party cookie blocks
-        await fetch(WEB_APP_URL, {
+        const response = await fetch(WEB_APP_URL, {
           method: 'POST',
-          mode: 'no-cors',
           headers: {
             'Content-Type': 'text/plain',
           },
           body: JSON.stringify(payload)
         });
         
-        const fallbackUrl = "https://docs.google.com/spreadsheets/d/1O_MVdOKrHZLTwuu5vfwa0IygNyeNQ_wt3w35RzFmvsc/edit";
-        const finalUrl = gsheetLink || fallbackUrl;
-
-        const openedTab = window.open(finalUrl, '_blank');
-        if (openedTab) {
-          opened = true;
-        } else {
-          alert("Your browser blocked the popup! Please allow popups for this site, or manually open your Google Sheet.");
+        const result = await response.json();
+        
+        if (result && result.url) {
+          const openedTab = window.open(result.url, '_blank');
+          if (openedTab) {
+            opened = true;
+          } else {
+            alert("Your browser blocked the popup! Please allow popups for this site, or manually open your Google Sheet.");
+          }
         }
       } catch (e) {
         console.warn("Webhook fetch failed:", e);
