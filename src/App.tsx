@@ -167,6 +167,9 @@ function App() {
 
   const handleGenerate = async () => {
     setIsGenerating(true);
+    // Open the tab synchronously right when the user clicks, to bypass popup blockers
+    const newTab = window.open('about:blank', '_blank');
+    
     try {
       const payload = {
         listingAddress: listingAddress || "New Listing",
@@ -211,7 +214,11 @@ function App() {
         });
         const result = await response.json();
         if (result && result.url) {
-          window.open(result.url, '_blank');
+          if (newTab) {
+            newTab.location.href = result.url;
+          } else {
+            window.open(result.url, '_blank');
+          }
           opened = true;
         }
       } catch (e) {
@@ -219,9 +226,11 @@ function App() {
       }
 
       if (!opened) {
+        if (newTab) newTab.close();
         alert("Successfully triggered! Please check your Google Sheet.");
       }
     } catch (error) {
+      if (newTab) newTab.close();
       alert("Failed to generate. Check console for details.");
       console.error(error);
     } finally {
