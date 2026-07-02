@@ -140,7 +140,7 @@ const APPS_SCRIPT_TEMPLATE = `function doPost(e) {
       notaryFeeAmount: 'B27',       
       itFeeAmount: 'B28'
     };
- 
+
     for (const [dataKey, cellAddress] of Object.entries(CELL_MAPPING)) {
       if (data[dataKey] !== undefined && cellAddress !== '') {
         newSheet.getRange(cellAddress).setValue(data[dataKey]);
@@ -148,14 +148,14 @@ const APPS_SCRIPT_TEMPLATE = `function doPost(e) {
     }
     
     SpreadsheetApp.flush();
- 
+
     const finalUrl = ss.getUrl() + '#gid=' + newSheet.getSheetId();
- 
+
     return ContentService.createTextOutput(JSON.stringify({ 
       status: 'success', 
       url: finalUrl 
     })).setMimeType(ContentService.MimeType.JSON);
- 
+
   } catch (error) {
     return ContentService.createTextOutput(JSON.stringify({ 
       status: 'error', 
@@ -163,7 +163,7 @@ const APPS_SCRIPT_TEMPLATE = `function doPost(e) {
     })).setMimeType(ContentService.MimeType.JSON);
   }
 }
- 
+
 function doOptions(e) {
   return ContentService.createTextOutput('')
     .setMimeType(ContentService.MimeType.TEXT);
