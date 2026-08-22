@@ -129,6 +129,46 @@ label {
   align-items: center;
 }
 
+.listing-address-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.listing-address-row .input-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.zonal-link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--radius-md);
+  background: #0f766e;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.zonal-link-btn:hover {
+  background: #0b5f59;
+  transform: translateY(-1px);
+}
+
+.zonal-link-btn:focus-visible {
+  outline: 3px solid rgba(15, 118, 110, 0.25);
+  outline-offset: 2px;
+}
+
 .input-icon {
   position: absolute;
   left: 1rem;
@@ -239,6 +279,15 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 @media (max-width: 600px) {
+  .listing-address-row {
+    align-items: stretch;
+  }
+
+  .zonal-link-btn {
+    padding-inline: 0.55rem;
+    font-size: 0.7rem;
+  }
+
   .form-row {
     flex-direction: column;
     gap: 1.5rem;

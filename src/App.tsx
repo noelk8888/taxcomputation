@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Building2, MapPin, PhilippinePeso, Copy, Check } from 'lucide-react';
+import { Building2, MapPin, PhilippinePeso, Copy, Check, ExternalLink } from 'lucide-react';
 import './index.css';
 
 const APPS_SCRIPT_TEMPLATE = `function doPost(e) {
@@ -498,15 +498,25 @@ function App() {
           </div>
         </div>
         <div className="form-group">
-          <div className="input-wrapper">
-            <MapPin className="input-icon" size={18} />
-            <input 
-              type="text" 
-              placeholder="e.g. 123 Luxury Ave, Makati City" 
-              style={{ paddingLeft: '2.5rem' }}
-              value={listingAddress}
-              onChange={(e) => setListingAddress(e.target.value)}
-            />
+          <div className="listing-address-row">
+            <div className="input-wrapper">
+              <MapPin className="input-icon" size={18} />
+              <input
+                type="text"
+                placeholder="e.g. 123 Luxury Ave, Makati City"
+                style={{ paddingLeft: '2.5rem' }}
+                value={listingAddress}
+                onChange={(e) => setListingAddress(e.target.value)}
+              />
+            </div>
+            <a
+              className="zonal-link-btn"
+              href="https://bir-zonal.vercel.app/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              CHECK ZONAL <ExternalLink size={15} aria-hidden="true" />
+            </a>
           </div>
         </div>
 
