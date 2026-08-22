@@ -168,6 +168,56 @@ function doOptions(e) {
   return ContentService.createTextOutput('')
     .setMimeType(ContentService.MimeType.TEXT);
 }
+
+/**
+ * Opens a copy dialog containing the generated estimate as tab-separated text.
+ * Assign this function to the COPY drawing/button, or use the Copy estimate
+ * menu added by onOpen().
+ */
+function copyA1C34() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const text = sheet.getRange('A1:C34').getDisplayValues()
+    .map(row => row.join('\\t'))
+    .join('\\n');
+  const escapedText = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\"/g, '&quot;');
+
+  const html = HtmlService.createHtmlOutput(\`
+    <style>
+      body { font: 14px Arial, sans-serif; padding: 12px; }
+      textarea { width: 100%; height: 190px; box-sizing: border-box; }
+      button { margin-top: 10px; padding: 8px 16px; cursor: pointer; }
+      #status { margin-left: 8px; color: #188038; }
+    </style>
+    <textarea id="copyText" readonly>\${escapedText}</textarea>
+    <button onclick="copyText()">Copy A1:C34</button><span id="status"></span>
+    <script>
+      function copyText() {
+        const area = document.getElementById('copyText');
+        area.focus();
+        area.select();
+        navigator.clipboard.writeText(area.value)
+          .then(() => document.getElementById('status').textContent = 'Copied — ready to paste.')
+          .catch(() => {
+            document.execCommand('copy');
+            document.getElementById('status').textContent = 'Copied — ready to paste.';
+          });
+      }
+    </script>
+  \`).setWidth(520).setHeight(285);
+
+  SpreadsheetApp.getUi().showModalDialog(html, 'Copy estimate');
+}
+
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu('Estimate tools')
+    .addItem('Copy A1:C34', 'copyA1C34')
+    .addToUi();
+}
 `;
 
 const extractSpreadsheetId = (url: string) => {
