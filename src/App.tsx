@@ -169,53 +169,33 @@ function doOptions(e) {
     .setMimeType(ContentService.MimeType.TEXT);
 }
 
-/**
- * Opens a copy dialog containing the generated estimate as tab-separated text.
- * Assign this function to the COPY drawing/button, or use the Copy estimate
- * menu added by onOpen().
- */
-function copyA1C34() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  const text = sheet.getRange('A1:C34').getDisplayValues()
-    .map(row => row.join('\\t'))
-    .join('\\n');
-  const escapedText = text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\"/g, '&quot;');
+function exportA1C34AsPdf() {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = spreadsheet.getActiveSheet();
+  const exportUrl = 'https://docs.google.com/spreadsheets/d/' + spreadsheet.getId()
+    + '/export?format=pdf&gid=' + sheet.getSheetId()
+    + '&range=A1%3AC34&size=letter&portrait=true&fitw=true&scale=2'
+    + '&gridlines=false&sheetnames=false&pagenumbers=false&fzr=false';
+  const pdf = UrlFetchApp.fetch(exportUrl, {
+    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }
+  }).getBlob();
+  const filename = sheet.getName().replace(/[\\\\/:*?"<>|]/g, '-') + '-A1-C34.pdf';
+  const encodedPdf = Utilities.base64Encode(pdf.getBytes());
+  const html = HtmlService.createHtmlOutput(
+    '<style>body{font:14px Arial,sans-serif;padding:20px;text-align:center}'
+      + 'a{display:inline-block;background:#188038;color:#fff;padding:10px 16px;'
+      + 'border-radius:4px;text-decoration:none;font-weight:bold}</style>'
+      + '<p>Your A1:C34 PDF is ready.</p>'
+      + '<a href="data:application/pdf;base64,' + encodedPdf + '" download="' + filename + '">Download PDF</a>'
+  ).setWidth(320).setHeight(150);
 
-  const html = HtmlService.createHtmlOutput(\`
-    <style>
-      body { font: 14px Arial, sans-serif; padding: 12px; }
-      textarea { width: 100%; height: 190px; box-sizing: border-box; }
-      button { margin-top: 10px; padding: 8px 16px; cursor: pointer; }
-      #status { margin-left: 8px; color: #188038; }
-    </style>
-    <textarea id="copyText" readonly>\${escapedText}</textarea>
-    <button onclick="copyText()">Copy A1:C34</button><span id="status"></span>
-    <script>
-      function copyText() {
-        const area = document.getElementById('copyText');
-        area.focus();
-        area.select();
-        navigator.clipboard.writeText(area.value)
-          .then(() => document.getElementById('status').textContent = 'Copied — ready to paste.')
-          .catch(() => {
-            document.execCommand('copy');
-            document.getElementById('status').textContent = 'Copied — ready to paste.';
-          });
-      }
-    </script>
-  \`).setWidth(520).setHeight(285);
-
-  SpreadsheetApp.getUi().showModalDialog(html, 'Copy estimate');
+  SpreadsheetApp.getUi().showModalDialog(html, 'Export A1:C34 as PDF');
 }
 
 function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('Estimate tools')
-    .addItem('Copy A1:C34', 'copyA1C34')
+    .addItem('Export A1:C34 as PDF', 'exportA1C34AsPdf')
     .addToUi();
 }
 `;
