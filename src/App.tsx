@@ -935,7 +935,7 @@ function App() {
         <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '2rem', padding: '1rem 0', borderTop: '1px solid var(--border-color)' }}>
           <button 
             type="button" 
-            className="generate-btn" 
+            className="generate-btn gsheet-btn"
             onClick={handleGenerate}
             disabled={isGenerating}
             style={{ 

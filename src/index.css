@@ -279,6 +279,10 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 @media (max-width: 600px) {
+  .gsheet-btn {
+    display: none;
+  }
+
   .listing-address-row {
     align-items: stretch;
   }
