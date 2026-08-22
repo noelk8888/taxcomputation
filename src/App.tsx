@@ -180,7 +180,7 @@ function exportA1C34AsPdf() {
     headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }
   }).getBlob();
   const title = sheet.getRange('A1').getDisplayValue().trim() || sheet.getName();
-  const filename = title.replace(/[\\\\/:*?"<>|]/g, '-') + '.pdf';
+  const filename = title.split(/\\s+/).slice(0, 3).join(' ').replace(/[\\\\/:*?"<>|]/g, '-') + '.pdf';
   const encodedPdf = Utilities.base64Encode(pdf.getBytes());
   const html = HtmlService.createHtmlOutput(
     '<style>body{font:14px Arial,sans-serif;padding:20px;text-align:center}'
