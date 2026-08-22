@@ -175,7 +175,8 @@ function exportA1C34AsPdf() {
   const pdf = UrlFetchApp.fetch(exportUrl, {
     headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }
   }).getBlob();
-  const filename = sheet.getName().replace(/[\\/:*?"<>|]/g, '-') + '-A1-C34.pdf';
+  const title = sheet.getRange('A1').getDisplayValue().trim() || sheet.getName();
+  const filename = title.replace(/[\\/:*?"<>|]/g, '-') + '.pdf';
   const encodedPdf = Utilities.base64Encode(pdf.getBytes());
   const html = HtmlService.createHtmlOutput(
     '<style>body{font:14px Arial,sans-serif;padding:20px;text-align:center}'
@@ -190,7 +191,7 @@ function exportA1C34AsPdf() {
 
 function onOpen() {
   SpreadsheetApp.getUi()
-    .createMenu('Estimate tools')
+    .createMenu('Export to PDF')
     .addItem('Export A1:C34 as PDF', 'exportA1C34AsPdf')
     .addToUi();
 }
