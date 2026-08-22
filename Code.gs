@@ -146,10 +146,13 @@ function doPost(e) {
     SpreadsheetApp.flush();
 
     const finalUrl = ss.getUrl() + '#gid=' + newSheet.getSheetId();
+    const pdfExport = data.generatePdf ? createPdfExport_(ss, newSheet) : null;
 
     return ContentService.createTextOutput(JSON.stringify({ 
       status: 'success', 
-      url: finalUrl 
+      url: finalUrl,
+      pdfBase64: pdfExport ? pdfExport.base64 : null,
+      pdfFileName: pdfExport ? pdfExport.filename : null
     })).setMimeType(ContentService.MimeType.JSON);
 
   } catch (error) {
@@ -165,9 +168,7 @@ function doOptions(e) {
     .setMimeType(ContentService.MimeType.TEXT);
 }
 
-function exportA1C34AsPdf() {
-  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = spreadsheet.getActiveSheet();
+function createPdfExport_(spreadsheet, sheet) {
   const exportUrl = 'https://docs.google.com/spreadsheets/d/' + spreadsheet.getId()
     + '/export?format=pdf&gid=' + sheet.getSheetId()
     + '&range=A1%3AC34&size=letter&portrait=true&fitw=true&scale=2'
@@ -177,13 +178,17 @@ function exportA1C34AsPdf() {
   }).getBlob();
   const title = sheet.getRange('A1').getDisplayValue().trim() || sheet.getName();
   const filename = title.split(/\s+/).slice(0, 3).join(' ').replace(/[\\/:*?"<>|]/g, '-') + '.pdf';
-  const encodedPdf = Utilities.base64Encode(pdf.getBytes());
+  return { base64: Utilities.base64Encode(pdf.getBytes()), filename: filename };
+}
+
+function exportA1C34AsPdf() {
+  const pdfExport = createPdfExport_(SpreadsheetApp.getActiveSpreadsheet(), SpreadsheetApp.getActiveSheet());
   const html = HtmlService.createHtmlOutput(
     '<style>body{font:14px Arial,sans-serif;padding:20px;text-align:center}'
       + 'a{display:inline-block;background:#188038;color:#fff;padding:10px 16px;'
       + 'border-radius:4px;text-decoration:none;font-weight:bold}</style>'
       + '<p>Your A1:C34 PDF is ready.</p>'
-      + '<a href="data:application/pdf;base64,' + encodedPdf + '" download="' + filename + '">Download PDF</a>'
+      + '<a href="data:application/pdf;base64,' + pdfExport.base64 + '" download="' + pdfExport.filename + '">Download PDF</a>'
   ).setWidth(320).setHeight(150);
 
   SpreadsheetApp.getUi().showModalDialog(html, 'Export A1:C34 as PDF');

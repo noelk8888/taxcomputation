@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Building2, MapPin, PhilippinePeso, Copy, Check, ExternalLink } from 'lucide-react';
+import { Building2, MapPin, PhilippinePeso, Copy, Check, ExternalLink, FileDown } from 'lucide-react';
 import './index.css';
 
 const APPS_SCRIPT_TEMPLATE = `function doPost(e) {
@@ -150,10 +150,13 @@ const APPS_SCRIPT_TEMPLATE = `function doPost(e) {
     SpreadsheetApp.flush();
 
     const finalUrl = ss.getUrl() + '#gid=' + newSheet.getSheetId();
+    const pdfExport = data.generatePdf ? createPdfExport_(ss, newSheet) : null;
 
     return ContentService.createTextOutput(JSON.stringify({ 
       status: 'success', 
-      url: finalUrl 
+      url: finalUrl,
+      pdfBase64: pdfExport ? pdfExport.base64 : null,
+      pdfFileName: pdfExport ? pdfExport.filename : null
     })).setMimeType(ContentService.MimeType.JSON);
 
   } catch (error) {
@@ -169,9 +172,7 @@ function doOptions(e) {
     .setMimeType(ContentService.MimeType.TEXT);
 }
 
-function exportA1C34AsPdf() {
-  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = spreadsheet.getActiveSheet();
+function createPdfExport_(spreadsheet, sheet) {
   const exportUrl = 'https://docs.google.com/spreadsheets/d/' + spreadsheet.getId()
     + '/export?format=pdf&gid=' + sheet.getSheetId()
     + '&range=A1%3AC34&size=letter&portrait=true&fitw=true&scale=2'
@@ -181,13 +182,17 @@ function exportA1C34AsPdf() {
   }).getBlob();
   const title = sheet.getRange('A1').getDisplayValue().trim() || sheet.getName();
   const filename = title.split(/\\s+/).slice(0, 3).join(' ').replace(/[\\\\/:*?"<>|]/g, '-') + '.pdf';
-  const encodedPdf = Utilities.base64Encode(pdf.getBytes());
+  return { base64: Utilities.base64Encode(pdf.getBytes()), filename: filename };
+}
+
+function exportA1C34AsPdf() {
+  const pdfExport = createPdfExport_(SpreadsheetApp.getActiveSpreadsheet(), SpreadsheetApp.getActiveSheet());
   const html = HtmlService.createHtmlOutput(
     '<style>body{font:14px Arial,sans-serif;padding:20px;text-align:center}'
       + 'a{display:inline-block;background:#188038;color:#fff;padding:10px 16px;'
       + 'border-radius:4px;text-decoration:none;font-weight:bold}</style>'
       + '<p>Your A1:C34 PDF is ready.</p>'
-      + '<a href="data:application/pdf;base64,' + encodedPdf + '" download="' + filename + '">Download PDF</a>'
+      + '<a href="data:application/pdf;base64,' + pdfExport.base64 + '" download="' + pdfExport.filename + '">Download PDF</a>'
   ).setWidth(320).setHeight(150);
 
   SpreadsheetApp.getUi().showModalDialog(html, 'Export A1:C34 as PDF');
@@ -214,6 +219,7 @@ function App() {
   const [totalContractPrice, setTotalContractPrice] = useState('');
   const [priceType, setPriceType] = useState('GROSS'); // GROSS or NET
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [vatStatus, setVatStatus] = useState('NON VAT'); // VAT or NON VAT
 
   const [showGsheetModal, setShowGsheetModal] = useState(false);
@@ -394,11 +400,8 @@ function App() {
     setShowItFeeEstimate(true);
   };
 
-  const handleGenerate = async () => {
-    setIsGenerating(true);
-    
-    try {
-      const payload = {
+  const requestGeneration = async (generatePdf = false) => {
+    const payload = {
         listingAddress: listingAddress || "New Listing",
         totalContractPrice: parseFloat(totalContractPrice.replace(/,/g, '')) || 0,
         priceType: priceType,
@@ -425,36 +428,40 @@ function App() {
         dstAmount,
         transferTaxAmount,
         registrationFeeAmount,
-        totalBuyersExpense
-      };
+        totalBuyersExpense,
+        generatePdf
+    };
 
-      const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxhEIeJUO7wjsKPmYEA0H26tqY6i0C0Y5it1WptCo8z8uN46FBltNIqI4B0kmCPNFAeYQ/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxMtix8QOodsk_Yxm2q-y43FySCsMeZvQAhtu68VnF-7dvJeZl-6B5sA1BuhKeVm3bv9Q/exec";
+    const response = await fetch(WEB_APP_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+      body: JSON.stringify(payload)
+    });
 
-      let opened = false;
-      try {
-        const response = await fetch(WEB_APP_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'text/plain',
-          },
-          body: JSON.stringify(payload)
-        });
-        
-        const result = await response.json();
-        
-        if (result && result.url) {
-          const openedTab = window.open(result.url, '_blank');
-          if (openedTab) {
-            opened = true;
-          } else {
-            alert("Your browser blocked the popup! Please allow popups for this site, or manually open your Google Sheet.");
-          }
+    if (!response.ok) {
+      throw new Error('The Google Sheet could not be generated.');
+    }
+
+    const result = await response.json();
+    if (result?.status === 'error') {
+      throw new Error(result.message || 'The Google Sheet could not be generated.');
+    }
+    return result;
+  };
+
+  const handleGenerate = async () => {
+    setIsGenerating(true);
+    try {
+      const result = await requestGeneration();
+      if (result?.url) {
+        const openedTab = window.open(result.url, '_blank');
+        if (!openedTab) {
+          alert("Your browser blocked the popup! Please allow popups for this site, or manually open your Google Sheet.");
         }
-      } catch (e) {
-        console.warn("Webhook fetch failed:", e);
-      }
-
-      if (!opened) {
+      } else {
         alert("Successfully triggered! Please check your Google Sheet.");
       }
     } catch (error) {
@@ -462,6 +469,32 @@ function App() {
       console.error(error);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleGeneratePdf = async () => {
+    setIsGeneratingPdf(true);
+    try {
+      const result = await requestGeneration(true);
+      if (!result?.pdfBase64 || !result?.pdfFileName) {
+        throw new Error('The PDF export was not returned.');
+      }
+
+      const binary = atob(result.pdfBase64);
+      const bytes = Uint8Array.from(binary, character => character.charCodeAt(0));
+      const fileUrl = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = fileUrl;
+      link.download = result.pdfFileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(fileUrl), 60_000);
+    } catch (error) {
+      alert('Failed to create the PDF. Please try again.');
+      console.error(error);
+    } finally {
+      setIsGeneratingPdf(false);
     }
   };
 
@@ -928,6 +961,22 @@ function App() {
             }}
           >
             GSHEET
+          </button>
+          <button
+            type="button"
+            className="generate-btn"
+            onClick={handleGeneratePdf}
+            disabled={isGenerating || isGeneratingPdf}
+            style={{
+              backgroundColor: '#ea580c',
+              opacity: isGenerating || isGeneratingPdf ? 0.7 : 1,
+              cursor: isGenerating || isGeneratingPdf ? 'not-allowed' : 'pointer',
+              padding: '0.75rem 2rem',
+              fontSize: '1rem'
+            }}
+          >
+            <FileDown size={18} aria-hidden="true" style={{ marginRight: '0.4rem', verticalAlign: 'text-bottom' }} />
+            {isGeneratingPdf ? 'Creating PDF...' : 'PDF'}
           </button>
           <button 
             type="button" 
