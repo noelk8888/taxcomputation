@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Building2, MapPin, PhilippinePeso, Copy, Check, ExternalLink, FileDown } from 'lucide-react';
+import { Building2, MapPin, PhilippinePeso, Copy, Check, ExternalLink, FileDown, Moon, Sun } from 'lucide-react';
 import './index.css';
 
 const APPS_SCRIPT_TEMPLATE = `function doPost(e) {
@@ -215,6 +215,7 @@ const extractSpreadsheetId = (url: string) => {
 };
 
 function App() {
+  const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
   const [listingAddress, setListingAddress] = useState('');
   const [totalContractPrice, setTotalContractPrice] = useState('');
   const [priceType, setPriceType] = useState('GROSS'); // GROSS or NET
@@ -253,6 +254,12 @@ function App() {
       setShowGsheetModal(true);
     }
   }, [gsheetLink]);
+
+  React.useEffect(() => {
+    const theme = isDarkMode ? 'dark' : 'light';
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('theme', theme);
+  }, [isDarkMode]);
   
   const [lotArea, setLotArea] = useState('');
   const [zonalValue, setZonalValue] = useState('');
@@ -528,6 +535,15 @@ function App() {
                 <span>Net</span>
               </label>
             </div>
+            <button
+              type="button"
+              className="theme-toggle"
+              aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-pressed={isDarkMode}
+              onClick={() => setIsDarkMode(current => !current)}
+            >
+              {isDarkMode ? <Sun size={17} aria-hidden="true" /> : <Moon size={17} aria-hidden="true" />}
+            </button>
           </div>
         </div>
         <div className="form-group">
