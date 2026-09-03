@@ -948,7 +948,7 @@ function App() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '2rem', padding: '1rem 0', borderTop: '1px solid var(--border-color)' }}>
+        <div className="action-buttons" style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '2rem', padding: '1rem 0', borderTop: '1px solid var(--border-color)' }}>
           <button 
             type="button" 
             className="generate-btn gsheet-btn"
